@@ -97,20 +97,34 @@ class TwoStageDetector(BaseDetector):
         """bool: whether the detector has a RoI head"""
         return hasattr(self, 'roi_head') and self.roi_head is not None
 
-    def extract_feat(self, batch_inputs: Tensor) -> Tuple[Tensor]:
-        """Extract features.
+    # def extract_feat(self, batch_inputs: Tensor) -> Tuple[Tensor]:
+    #     """Extract features.
 
-        Args:
-            batch_inputs (Tensor): Image tensor with shape (N, C, H ,W).
+    #     Args:
+    #         batch_inputs (Tensor): Image tensor with shape (N, C, H ,W).
 
-        Returns:
-            tuple[Tensor]: Multi-level features that may have
-            different resolutions.
-        """
-        x = self.backbone(batch_inputs)
+    #     Returns:
+    #         tuple[Tensor]: Multi-level features that may have
+    #         different resolutions.
+    #     """
+    #     x = self.backbone(batch_inputs)
+    #     if self.with_neck:
+    #         x = self.neck(x)
+    #     return x
+    def extract_feat(self, img):
+        """Directly extract features from the backbone+neck."""
+        x = self.backbone(img)
+        # 可视化resnet产生的特征
+        from tools.feature_visualization import draw_feature_map
+        draw_feature_map(x)
         if self.with_neck:
             x = self.neck(x)
+            # 可视化FPN产生的特征
+            from tools.feature_visualization import draw_feature_map
+            draw_feature_map(x)
         return x
+
+    
 
     def _forward(self, batch_inputs: Tensor,
                  batch_data_samples: SampleList) -> tuple:
